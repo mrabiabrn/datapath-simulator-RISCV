@@ -9,7 +9,7 @@ private:
     bool memWrite;
  
 public:
-    DataMemory();
+
  
     void setMemRead(bool memRead);
     void setMemWrite(bool memWrite);
