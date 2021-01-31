@@ -4,7 +4,12 @@
 #include "./util/Alu.h"
 #include "./util/DataMemory.h"
 #include "./util/Mux.h"
+#include "./util/InstructionMemory.h"
 
+#include <vector>
+#include <fstream>
+#include <sstream>
+#include <string>
 
 using namespace std;
 
@@ -25,6 +30,21 @@ int main() {
 	
 	ControlUnit c = ControlUnit("ld");
 	cout << c.getRegWrite() << " " << c.getMemRead() << endl;
+	
+	/*
+	InstructionMemory im = InstructionMemory("input.txt");
+	for(int i = 0; i < im.instructions.size(); i++) {
+	
+		for (int j = 0; j < 4; j++)
+			cout<< im.instructions[i][j] << endl;
+	
+	}
+	*/
+	
+	
+		
+	
+	
 
 
  return 0;
