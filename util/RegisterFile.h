@@ -7,10 +7,11 @@ using namespace std;
 
 class RegisterFile {
 
-	vector<int> registers;	// x0 is hardwired to 0
+	vector<int> registers;	
+	vector<int> temps;
 	
 	public:
-	RegisterFile();
+	RegisterFile(int size);
 	void readRegs(int& reg1, int& reg2, int indx1, int indx2);
 	void writeReg(int regIndx, int data);
 	
