@@ -4,23 +4,23 @@
 class Mux
 {
 private:
-    int* input_1;
-    int* input_2;
-    int select;
+    int input_1;
+    int input_2;
+    bool select;
  
 public:
-    Mux(int* input_1, int* input_1, int select);
-    Mux(int* input_1, int* input_1);
+    Mux(int input_1, int input_2, bool select);
+    Mux(int input_1, int input_2);
     Mux();
  
-    void setInput_1(int* input_1);
-    void setInput_2(int* input_2);
-    void setInput(int* input_1, int* input_2);
-    void setSelect(int select);
+    void setInput_1(int input_1);
+    void setInput_2(int input_2);
+    void setInput(int input_1, int input_2);
+    void setSelect(bool select);
 
-    int* getOutput();
-    int* getOutput(int select);
-    int* getOutput(int* input_1,int* input_2, int select);
+    int getOutput();
+    int getOutput(bool select);
+    int getOutput(int input_1,int input_2, bool select);
  
 };
  
