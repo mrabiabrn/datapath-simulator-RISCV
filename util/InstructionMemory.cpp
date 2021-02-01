@@ -31,7 +31,9 @@ InstructionMemory::InstructionMemory(string filePath) {
 			
 			while((position = token.find(","))!= std::string::npos || (position = token.find("("))!= std::string::npos 
 										 || (position = token.find(")"))!= std::string::npos) {
-				instruction.push_back(token.substr(0,position));
+				if(!token.empty())
+					instruction.push_back(token.substr(0,position));
+				
 				token = token.substr(position+1);
 				
 			}
