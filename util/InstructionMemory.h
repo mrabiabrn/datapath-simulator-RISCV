@@ -4,20 +4,23 @@
 #include "RegisterFile.h"
 #include <vector>
 #include <string>
+#include <map>
 
 using namespace std;
 
 class InstructionMemory {
 
 	private:
-	//vector<vector<string>> instructions;	
-	RegisterFile* PC;
+	vector<vector<string>> instructions;
+	map<string, int> labels;
+	int PC;
 	
 	public:
-	vector<vector<string>> instructions;
+
 	InstructionMemory(string filePath);
-	//readInstruction(vector<string>& inst);
-	//setPC();
+	void readInstruction(vector<string>& inst);
+	void setPC(int address);
+	int getInstructionNum();
 	
 };
 

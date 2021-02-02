@@ -11,11 +11,12 @@
 #include <sstream>
 #include <string>
 
+
 using namespace std;
 
 int main() {
 
-
+	/*
 	RegisterFile r = RegisterFile(32,true);
 	r.writeReg(1,3);
 	r.writeReg(2,4);
@@ -29,7 +30,7 @@ int main() {
 	cout << reg1 << " " << reg2 << endl;
 	
 	ControlUnit c = ControlUnit("ld");
-	cout << c.getRegWrite() << " " << c.getMemRead() << endl;
+	cout << c.getRegWrite() << " " << c.getMemRead() << endl;*/
 	
 	/*
 	InstructionMemory im = InstructionMemory("input.txt");
@@ -40,6 +41,21 @@ int main() {
 	
 	}
 	*/
+	
+	InstructionMemory im = InstructionMemory("input.txt");
+	RegisterFile PC = RegisterFile(1,true);
+	int clk = 0;
+	
+	int numInst = im.getInstructionNum();
+	
+	/*while(PC <= numInst) {
+	
+		//vector<string> curInst = im.readInstruction();
+	
+		
+	
+	
+	}*/
 	
 	
 		

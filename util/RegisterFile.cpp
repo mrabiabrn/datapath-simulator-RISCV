@@ -30,20 +30,20 @@ void RegisterFile::setRegWrite(bool regWrite) {
 
 }
 
-void RegisterFile::readReg(int& reg1, int indx1) {
+void RegisterFile::getReg(int& reg1, int indx1) {
 
 	reg1 = this->registers[indx1];
 	
 }
 
-void RegisterFile::readReg(int& reg1, int& reg2, int indx1, int indx2) {
+void RegisterFile::getReg(int& reg1, int& reg2, int indx1, int indx2) {
 
-	readReg(reg1,indx1); 
-	readReg(reg2,indx2); 
+	getReg(reg1,indx1); 
+	getReg(reg2,indx2); 
 }
 
 // Writing to register file also in rising edge...Writing to temp no problem?!
-void RegisterFile::writeReg(int regIndx, int data){
+void RegisterFile::setReg(int regIndx, int data){
 
 	if(this->regWrite)
 		this->temp[regIndx] = data;	

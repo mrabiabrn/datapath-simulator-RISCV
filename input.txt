@@ -1,4 +1,4 @@
 ld x1,0(x2)
+beq x2,x3 ,loop 
+loop :
 add x2,x3, x4
-
-
