@@ -13,10 +13,10 @@ using namespace std;
  * 	reference : https://www.geeksforgeeks.org/processing-strings-using-stdistringstream/
  *
  */
-InstructionMemory::InstructionMemory(string filePath) { 
+InstructionMemory::InstructionMemory(string filePath, RegisterFile* PC) { 
 
 	//PC = 0;
-	
+	this->PC = PC;
 	ifstream file("input.txt");
 	string line;
 	int i = 0;
@@ -24,7 +24,7 @@ InstructionMemory::InstructionMemory(string filePath) {
 	
 		if(line.size() > 0) {
 		
-		vector<string> instruction; //(4,"");
+		vector<string> instruction; //(4,"");  x1 x2 inst-pc
 
 		istringstream str(line);
 		string token;
@@ -64,9 +64,22 @@ InstructionMemory::InstructionMemory(string filePath) {
 
 
 void InstructionMemory::readInstruction(vector<string>& inst) {
+	// Son instruction label olmamalı
+	while(true){
+		long reg = 0;
+		this->PC->getReg(reg,0);
+		inst = (this->instructions)[reg];
+		if(inst.size() == 1){
+			this->PC->setReg(0,reg+1);
+			continue;
+		}
+		if(!inst[0].compare("beq")){
+			inst[3] = labels.find(inst[3])->second - PC->getReg(0);
+		}
 
-	//inst = (this->instructions)[PC];
-
+		break;
+	}
+	
 }
 
 

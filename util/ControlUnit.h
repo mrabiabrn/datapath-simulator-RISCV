@@ -2,13 +2,14 @@
 #define CONTROLUNIT_H
 
 #include <string>
+#include "RegisterFile.h"
 
 using namespace std;
 
 class ControlUnit {
 
 	private:
-	string operation;
+	int operation;
 	bool regWrite = 0;
 	bool aluSrc = 0;		// 1 when second operand is an imm value, 0 otherwise
 	bool memRead = 0;
@@ -18,10 +19,9 @@ class ControlUnit {
 	int aluOp;
 	
 	public:
+
 	
-	ControlUnit(string operation);
-	
-	void setOperation(string operation);	
+	void setOperation(int operation);	
 	
 	bool getRegWrite();
 	bool getAluSrc();
@@ -30,6 +30,7 @@ class ControlUnit {
 	bool getMemToReg();
 	bool getPcSrc();
 	int getAluOp();
+	void fillReg(RegisterFile* regs, int idx);
 	
 	
 	

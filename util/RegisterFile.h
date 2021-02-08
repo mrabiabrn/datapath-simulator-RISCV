@@ -8,17 +8,18 @@ using namespace std;
 class RegisterFile {
 
 	private:
-	vector<int> registers;	
-	vector<int> temp;
+	vector<long> registers;	
+	vector<long> temp;
 	bool regWrite;
 	
 	public:
 	RegisterFile(int size, bool regWrite);			// regWrite = 1 when it is not the regfile
 	void update();							// pass temp values to registers
 	void setRegWrite(bool regWrite);						
-	void getReg(int& reg1, int indx1);
-	void getReg(int& reg1, int& reg2, int indx1, int indx2);
-	void setReg(int regIndx, int data);				// change the element at the given indx
+	void getReg(long& reg1, int indx1);
+	long getReg(int indx1);
+	void getReg(long& reg1, long& reg2, int indx1, int indx2);
+	void setReg(int regIndx, long data);				// change the element at the given indx
 	
 	
 };

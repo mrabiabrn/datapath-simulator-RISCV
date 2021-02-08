@@ -1,5 +1,7 @@
 #include "Alu.h"
 
+Alu::Alu(){}
+
 Alu::Alu(int input_1, int input_2, int operation)
 {
     setInput(input_1, input_2);
@@ -53,6 +55,13 @@ or ->3
         return this->input_1 | this->input_2;
     }
     return 0;
+}
+
+bool Alu::getZero(){
+    if(getOutput() == 0){
+        return true;
+    }
+    return false;
 }
 
 int Alu::getOutput(int operation){

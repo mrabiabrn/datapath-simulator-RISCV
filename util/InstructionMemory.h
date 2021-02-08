@@ -11,15 +11,14 @@ using namespace std;
 class InstructionMemory {
 
 	private:
+	RegisterFile* PC;
 	vector<vector<string>> instructions;
 	map<string, int> labels;
-	int PC;
 	
 	public:
 
-	InstructionMemory(string filePath);
+	InstructionMemory(string filePath, RegisterFile* PC);
 	void readInstruction(vector<string>& inst);
-	void setPC(int address);
 	int getInstructionNum();
 	
 };
