@@ -1,5 +1,5 @@
-add x2,x1,x3
-add x1,x3,x3
+add x5,x5,x5
+sd x3,3(x5)
 add x5,x5,x5
 add x5,x5,x5
 add x5,x5,x5

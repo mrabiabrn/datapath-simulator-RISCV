@@ -62,8 +62,8 @@ int main() {
 	Mux writeMux = Mux();
 	Alu adder = Alu(0,0,0);
 
-	RegisterFile if_id = RegisterFile(5, 1);
-	RegisterFile id_ex = RegisterFile(14, 1);
+	RegisterFile if_id = RegisterFile(6, 1);
+	RegisterFile id_ex = RegisterFile(15, 1);
 	RegisterFile ex_mem = RegisterFile(32, 1);
 	RegisterFile mem_wb = RegisterFile(32, 1);
 
@@ -75,8 +75,15 @@ int main() {
 	registers.setReg(1,5);
 	registers.setReg(2,10);
 	registers.setReg(3,15);
+	registers.setReg(5,3);
 	registers.update();
-	
+	registers.setRegWrite(false);
+	dm.setMemWrite(true);
+	dm.write(28,4);
+	dm.setMemWrite(false);
+	dm.setMemRead(true);
+	cout<<dm.read(28)<<endl;
+	dm.setMemRead(false);
 	for(int i= 0; i < 3; i++)
 		cout << "x" << i+1 << " " << registers.getReg(i+1) << endl;
 	
@@ -97,6 +104,8 @@ int main() {
 		* give 2 and 3 to alu
 		*/
 	//sd de offset regd
+		cout<<inst[0]<<inst[1]<<inst[2]<<inst[3]<<endl;
+
 		if_id.setReg(0, instonum.find(inst[0])->second);
 		
 		int offset;
@@ -105,13 +114,13 @@ int main() {
 			if_id.setReg(1, stoi(inst[1].substr(1)));	// rdest
 			if_id.setReg(2, stoi(inst[3].substr(1))); 	// reg1
 			if_id.setReg(5, stoi(inst[2])); 		// offset
-			offset = stoi(inst[2]);
+	
 		}
 		else if(inst[0] == "sd" ){
 			if_id.setReg(5, stoi(inst[2]));	   	// offset
 			if_id.setReg(2, stoi(inst[3].substr(1))); 	// reg2
 			if_id.setReg(3, stoi(inst[1].substr(1))); 	// reg1
-			offset = stoi(inst[1]);
+		
 			
 		}
 		else if(inst[0] == "beq"){
@@ -157,11 +166,15 @@ int main() {
 		id_ex.setReg(4, if_id.getReg(4));
 		id_ex.setReg(5, registers.getReg(if_id.getReg(2))); // read reg1 value
 		id_ex.setReg(6, registers.getReg(if_id.getReg(3))); // read reg2 value
+
+		cout<<if_id.getReg(2)<<" Reg1: "<<registers.getReg(if_id.getReg(2))<<endl;
+		cout<<if_id.getReg(3)<<" Reg2: "<<registers.getReg(if_id.getReg(3))<<endl;
 		control.fillReg(&id_ex, 7);
 		id_ex.setReg(14, if_id.getReg(5));	// offset
 		
 		// EX
 		aluMux.setSelect(id_ex.getReg(8));
+		cout<<"AluMux "<<id_ex.getReg(6)<<" "<<id_ex.getReg(14)<<endl;
 		aluMux.setInput_1(id_ex.getReg(6));
 		aluMux.setInput_2(id_ex.getReg(14));	// get offset
 
@@ -176,21 +189,23 @@ int main() {
 		ex_mem.setReg(3, id_ex.getReg(3));
 		ex_mem.setReg(4, id_ex.getReg(4));
 		ex_mem.setReg(5, alu.getOutput()); // read reg1
+		cout<<"Alu"<<alu.getOutput()<<endl;
 		ex_mem.setReg(6, alu.getZero());
 		ex_mem.setReg(7, adder.getOutput());
 		ex_mem.setReg(8, id_ex.getReg(6)); // read second
 		
 		for(int i= 0; i < 7; i++)
-			ex_mem.setReg(i+9, id_ex.getReg(i+1));
+			ex_mem.setReg(i+9, id_ex.getReg(i+7));
 		
 		
 		int branch;
 		branch = ex_mem.getReg(6) & ex_mem.getReg(13);	// zero AND pcSrc
 		
 		
-		dm.setMemWrite(ex_mem.getReg(11));
-		dm.setMemRead(ex_mem.getReg(10));
-	
+		dm.setMemWrite(ex_mem.getReg(12));
+		dm.setMemRead(ex_mem.getReg(11));
+		cout<<"Write: "<<ex_mem.getReg(12)<<endl;
+		cout<<"Read: "<<ex_mem.getReg(11)<<endl;
 		
 		dm.write(ex_mem.getReg(5), ex_mem.getReg(8));
 		
@@ -199,14 +214,18 @@ int main() {
 		mem_wb.setReg(2, ex_mem.getReg(2));
 		mem_wb.setReg(3, ex_mem.getReg(3));
 		mem_wb.setReg(4, ex_mem.getReg(4));
+		cout<<endl;
+		cout<<ex_mem.getReg(5)<<" "<<dm.read(ex_mem.getReg(5))<<endl;
+		cout<<endl;
 		mem_wb.setReg(5, dm.read(ex_mem.getReg(5))); // read this address
+		cout<<ex_mem.getReg(5)<<" Data: "<<dm.read(ex_mem.getReg(5))<<endl;
 		mem_wb.setReg(6, ex_mem.getReg(5));	// address
 		mem_wb.setReg(7, ex_mem.getReg(9));	// regWrite
 		mem_wb.setReg(8, ex_mem.getReg(13));	// memToReg
 		
 		writeMux.setSelect(mem_wb.getReg(8));
-		writeMux.setInput_1(mem_wb.getReg(6));
-		writeMux.setInput_2(mem_wb.getReg(5));
+		writeMux.setInput_1(mem_wb.getReg(5));
+		writeMux.setInput_2(mem_wb.getReg(6));
 		
 		registers.setRegWrite(mem_wb.getReg(7));
 		registers.setReg(mem_wb.getReg(1),writeMux.getOutput());
@@ -232,15 +251,13 @@ int main() {
 
 	//int clk = 0;
 	
-	
+		dm.setMemRead(true);
+	cout<<"hey"<<dm.read(28)<<endl;
+	dm.setMemRead(false);
 	for(int i= 0; i < 3; i++)
 		cout << "x" << i+1 << " " << registers.getReg(i+1) << endl;
-	
-	
-		
-	
-	
 
+cout<<"hey"<<endl;
 
  return 0;
  

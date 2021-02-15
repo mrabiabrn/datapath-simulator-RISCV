@@ -17,7 +17,7 @@ int DataMemory::read(int address)
         std::map<int,int>::iterator it = this->dataMap.find(address) ;
         if (it == this->dataMap.end() )
         {
-            return 0;
+            return -1;
         }
         return it->second;
     }

@@ -8,8 +8,13 @@ using namespace std;
 add->0, sub->1, and->2, or ->3
 */
 void ControlUnit::setOperation(int operation){
-
-	if(operation == 0) {
+	regWrite = 0;
+	aluSrc = 0;		// 1 when second operand is an imm value, 0 otherwise
+	memRead = 0;
+	memWrite = 0;
+	memToReg = 0;
+	pcSrc = 0; 
+	if(operation == 0) { 
 		this->regWrite = true;
 		this->aluOp = 0;
 	}
@@ -26,7 +31,7 @@ void ControlUnit::setOperation(int operation){
 		this->aluOp = 3;
 	}
 	else if(operation == 4) {
-		this->regWrite = this->aluSrc = this->memRead = this->aluOp = true;
+		this->regWrite = this->aluSrc = this->memRead = true;
 		this->aluOp = 0;
 	}
 	else if(operation == 5) {
