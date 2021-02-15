@@ -7,7 +7,7 @@ using namespace std;
 
 class RegisterFile {
 
-	private:
+	public:
 	vector<long> registers;	
 	vector<long> temp;
 	bool regWrite;

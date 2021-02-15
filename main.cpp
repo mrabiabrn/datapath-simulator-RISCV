@@ -104,7 +104,7 @@ int main() {
 		* give 2 and 3 to alu
 		*/
 	//sd de offset regd
-		cout<<inst[0]<<inst[1]<<inst[2]<<inst[3]<<endl;
+		cout<<"Instruction taken:" << inst[0]<<inst[1]<<inst[2]<<inst[3]<<endl;
 
 		if_id.setReg(0, instonum.find(inst[0])->second);
 		
@@ -141,17 +141,16 @@ int main() {
 
 		
 		if_id.setReg(4, PC.getReg(0));
+		cout<<"if-id is set to:"<<endl;
+		for(int i = 0; i < 6; i++)
+		 		cout<< if_id.temp[i]<<" ";
+		cout<<endl;
 		
-		if(id_ex.getReg(9) && ((id_ex.getReg(1) == if_id.getReg(2) )|| (id_ex.getReg(1) ==  if_id.getReg(3)))) {
-		 	if_id.setReg(0,7);	// set instruction as nop, 
-		 	PC.setReg(0,PC.getReg(0));
-		 	for(int i = 0; i < 6; i++)
-		 		if_id.setReg(i,if_id.getReg(i));
-		 	
-		}
-		else {
-		PC.setReg(0,PC.getReg(0)+1);		// PC+4	
-		}
+		cout<<"if-id is set to:"<<endl;
+		for(int i = 0; i < 6; i++)
+		 		cout<< if_id.registers[i]<<" ";
+		cout<<endl;
+
 		// ID
 		/*
 		0 -> instruction add 0 sub 1 load 2 sd 3 beq 4
@@ -176,29 +175,66 @@ int main() {
 		id_ex.setReg(2, if_id.getReg(2));
 		id_ex.setReg(3, if_id.getReg(3));
 		id_ex.setReg(4, if_id.getReg(4));
+		cout<<registers.getReg(if_id.getReg(2))<<endl;
 		id_ex.setReg(5, registers.getReg(if_id.getReg(2))); // read reg1 value
 		id_ex.setReg(6, registers.getReg(if_id.getReg(3))); // read reg2 value
 
-		cout<<if_id.getReg(2)<<" Reg1: "<<registers.getReg(if_id.getReg(2))<<endl;
-		cout<<if_id.getReg(3)<<" Reg2: "<<registers.getReg(if_id.getReg(3))<<endl;
+		if(id_ex.getReg(9) && ((id_ex.getReg(1) == if_id.getReg(2) )|| (id_ex.getReg(1) ==  if_id.getReg(3)))) {
+			for(int i=0;i<6;i++){
+				if_id.setReg(i,if_id.getReg(i));
+			}
+		 	control.setOperation(7);	// set instruction as nop, 
+		 	PC.setReg(0,PC.getReg(0));
+
+		 	cout<<"Stall"<<endl;
+		}
+		else {
+			if_id.setRegWrite(true);
+			PC.setReg(0,PC.getReg(0)+1);		// PC+4	
+		}
+
+		cout<<id_ex.getReg(3)<<id_ex.getReg(2)<<endl;
+		if(mem_wb.getReg(9)  && mem_wb.getReg(1) != 0 && mem_wb.getReg(1) == if_id.getReg(3)){
+			id_ex.setReg(6,mem_wb.getReg(5));
+			cout<<mem_wb.getReg(5)<<endl;
+			//cout << " reading "<< mem_wb.getReg(5) << " for alu" << endl;
+		}
+		if(mem_wb.getReg(9)  && mem_wb.getReg(1) != 0 && mem_wb.getReg(1) == if_id.getReg(2)){
+			id_ex.setReg(5,mem_wb.getReg(5));
+			cout<<mem_wb.getReg(5)<<endl;
+			//cout << " reading "<< mem_wb.getReg(5) << " for alu" << endl;
+		}
+
+
+		//cout<<if_id.getReg(2)<<" Reg1: "<<registers.getReg(if_id.getReg(2))<<endl;
+		//cout<<if_id.getReg(3)<<" Reg2: "<<registers.getReg(if_id.getReg(3))<<endl;
 		control.fillReg(&id_ex, 7);
 		id_ex.setReg(14, if_id.getReg(5));	// offset
+cout<<"id_ex is set to:"<<endl;
+		for(int i = 0; i < 15; i++)
+		 		cout<< id_ex.temp[i]<<" ";
+		cout<<endl;
+		cout<<"id_ex is set to:"<<endl;
+		for(int i = 0; i < 15; i++)
+		 		cout<< id_ex.registers[i]<<" ";
+		cout<<endl;
 		
 		// EX
 		aluMux.setSelect(id_ex.getReg(8));
-		cout<<"AluMux "<<id_ex.getReg(6)<<" "<<id_ex.getReg(14)<<endl;
+		//cout<<"AluMux "<<id_ex.getReg(6)<<" "<<id_ex.getReg(14)<<endl;
 		aluMux.setInput_1(id_ex.getReg(6));
 		aluMux.setInput_2(id_ex.getReg(14));	// get offset
 
 		alu.setOperation(id_ex.getReg(13));
 		// 
-		
+		//cout<<"MemWrite"<<mem_wb.getReg(7)<<ex_mem.getReg(1)<<endl;
 		if(ex_mem.getReg(9) && ex_mem.getReg(1) != 0 && ex_mem.getReg(1) == id_ex.getReg(2))
 			alu.setInput_1(ex_mem.getReg(5));
 		else if(mem_wb.getReg(7) && mem_wb.getReg(1) != 0 && mem_wb.getReg(1) == id_ex.getReg(2)) {
-			if(mem_wb.getReg(9)) // memRead
+			if(mem_wb.getReg(9)){
 				alu.setInput_1(mem_wb.getReg(5));
-			else 
+
+			}else
 				alu.setInput_1(mem_wb.getReg(6));
 		}
 		else {
@@ -207,19 +243,18 @@ int main() {
 		if(ex_mem.getReg(9) && ex_mem.getReg(1) != 0 && ex_mem.getReg(1) == id_ex.getReg(3))
 			alu.setInput_2(ex_mem.getReg(5));
 		else if(mem_wb.getReg(7) && mem_wb.getReg(1) != 0 && mem_wb.getReg(1) == id_ex.getReg(3))
+			
 			if(mem_wb.getReg(9)){
 				alu.setInput_2(mem_wb.getReg(5));
-				cout << " reading "<< mem_wb.getReg(5) << " for alu" << endl;
-				}
-			else {
+
+			}else
 				alu.setInput_2(mem_wb.getReg(6));
-				cout << "AKUUUU" << endl;
-				}
+			
 		else {
 			alu.setInput_2(aluMux.getOutput());
 		}
 		
-	cout << "alu input 1: " << alu.input_1 << " alu input 2: " << alu.input_2 << endl;
+	    cout << "alu input 1: " << alu.input_1 << " alu input 2: " << alu.input_2 << endl;
 		adder.setInput(id_ex.getReg(4), id_ex.getReg(14));	// calculates the address for branch
 
 		ex_mem.setReg(0, id_ex.getReg(0));
@@ -228,14 +263,21 @@ int main() {
 		ex_mem.setReg(3, id_ex.getReg(3));
 		ex_mem.setReg(4, id_ex.getReg(4));
 		ex_mem.setReg(5, alu.getOutput()); // read reg1
-		cout<<"Alu"<<alu.getOutput()<<endl;
+		//cout<<"Alu"<<alu.getOutput()<<endl;
 		ex_mem.setReg(6, alu.getZero());
 		ex_mem.setReg(7, adder.getOutput());
 		ex_mem.setReg(8, id_ex.getReg(6)); // read second
 		
 		for(int i= 0; i < 7; i++)
 			ex_mem.setReg(i+9, id_ex.getReg(i+7));
-		
+		cout<<"ex_mem is set to:"<<endl;
+		for(int i = 0; i < 16; i++)
+		 		cout<< ex_mem.temp[i]<<" ";
+		cout<<endl;
+		cout<<"ex_mem is set to:"<<endl;
+		for(int i = 0; i < 16; i++)
+		 		cout<< ex_mem.registers[i]<<" ";
+		cout<<endl;
 		
 		int branch;
 		branch = ex_mem.getReg(6) & ex_mem.getReg(14);	// zero AND pcSrc 
@@ -252,37 +294,51 @@ int main() {
 		mem_wb.setReg(2, ex_mem.getReg(2));
 		mem_wb.setReg(3, ex_mem.getReg(3));
 		mem_wb.setReg(4, ex_mem.getReg(4));
-		cout<<endl;
-		cout<<ex_mem.getReg(5)<<" "<<dm.read(ex_mem.getReg(5))<<endl;
-		cout<<endl;
+		//cout<<endl;
+		//cout<<ex_mem.getReg(5)<<" "<<dm.read(ex_mem.getReg(5))<<endl;
+		//cout<<endl;
 		mem_wb.setReg(5, dm.read(ex_mem.getReg(5))); // read this address
-		cout<<ex_mem.getReg(5)<<" Data: "<<dm.read(ex_mem.getReg(5))<<endl;
+		//cout<<ex_mem.getReg(5)<<" Data: "<<dm.read(ex_mem.getReg(5))<<endl;
 		mem_wb.setReg(6, ex_mem.getReg(5));	// address
 		mem_wb.setReg(7, ex_mem.getReg(9));	// regWrite
 		mem_wb.setReg(8, ex_mem.getReg(13));	// memToReg
 		mem_wb.setReg(9, ex_mem.getReg(11));	// memRead
 		
+	cout<<"mem_wb is set to:"<<endl;
+		for(int i = 0; i < 10; i++)
+		 		cout<< mem_wb.temp[i]<<" ";
+		cout<<endl;
+		cout<<"mem_wb is set to:"<<endl;
+		for(int i = 0; i < 10; i++)
+		 		cout<< mem_wb.registers[i]<<" ";
+		cout<<endl;
+		
+		
 		writeMux.setSelect(mem_wb.getReg(8));
 		writeMux.setInput_1(mem_wb.getReg(6)); // alu result
 		writeMux.setInput_2(mem_wb.getReg(5)); // mem[alu result]
-		
+		cout<<mem_wb.getReg(6)<<mem_wb.getReg(5)<<endl;
+		cout<<"Write mux output "<<writeMux.input_1<<" "<<writeMux.input_2<<" "<<writeMux.getOutput()<<endl;
+
 		registers.setRegWrite(mem_wb.getReg(7));
 		registers.setReg(mem_wb.getReg(1),writeMux.getOutput());
 		
-		
-		registers.update();
 		if_id.update();
 		id_ex.update();
 		ex_mem.update();
 		mem_wb.update();
-		PC.update();
+		
+
+		
+	registers.update();
+	PC.update();
 		
 		for(int i= 0; i < 5; i++)
 		cout << "x" << i+1 << " " << registers.getReg(i+1) << endl;
 		
 		cout<<"PC: " << PC.getReg(0) << endl;
 		
-	
+		cout<<endl;
 
 	}
 

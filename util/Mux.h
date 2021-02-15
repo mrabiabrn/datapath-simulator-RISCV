@@ -3,7 +3,7 @@
  
 class Mux
 {
-private:
+public:
     int input_1;
     int input_2;
     bool select;
