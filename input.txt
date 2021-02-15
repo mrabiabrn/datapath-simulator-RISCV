@@ -1,7 +1,7 @@
+ld  x5,13(x3)
+add x3, x1, x5
 add x5,x5,x5
-sd x3,3(x5)
-add x5,x5,x5
-add x5,x5,x5
+add x1,x1,x1
 add x5,x5,x5
 add x5,x5,x5
 add x5,x5,x5

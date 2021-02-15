@@ -90,7 +90,7 @@ int main() {
 	cout << endl;
 	
 
-	while(PC.getReg(0)<im.getInstructionNum()*5){
+	while(PC.getReg(0)<im.getInstructionNum()){
 		// IF
 		vector<string> inst;
 		im.readInstruction(inst);
@@ -114,9 +114,11 @@ int main() {
 			if_id.setReg(1, stoi(inst[1].substr(1)));	// rdest
 			if_id.setReg(2, stoi(inst[3].substr(1))); 	// reg1
 			if_id.setReg(5, stoi(inst[2])); 		// offset
+			if_id.setReg(3,-1); 
 	
 		}
 		else if(inst[0] == "sd" ){
+			if_id.setReg(1,-1); 
 			if_id.setReg(5, stoi(inst[2]));	   	// offset
 			if_id.setReg(2, stoi(inst[3].substr(1))); 	// reg2
 			if_id.setReg(3, stoi(inst[1].substr(1))); 	// reg1
@@ -124,6 +126,7 @@ int main() {
 			
 		}
 		else if(inst[0] == "beq"){
+			if_id.setReg(1,-1); 
 			if_id.setReg(5, stoi(inst[3]));		 // offset
 			if_id.setReg(2, stoi(inst[2].substr(1)));	 // reg1
 			if_id.setReg(3, stoi(inst[1].substr(1))); 	 // regd
@@ -138,8 +141,17 @@ int main() {
 
 		
 		if_id.setReg(4, PC.getReg(0));
-		PC.setReg(0,PC.getReg(0)+1);		// PC+4	
 		
+		if(id_ex.getReg(9) && ((id_ex.getReg(1) == if_id.getReg(2) )|| (id_ex.getReg(1) ==  if_id.getReg(3)))) {
+		 	if_id.setReg(0,7);	// set instruction as nop, 
+		 	PC.setReg(0,PC.getReg(0));
+		 	for(int i = 0; i < 6; i++)
+		 		if_id.setReg(i,if_id.getReg(i));
+		 	
+		}
+		else {
+		PC.setReg(0,PC.getReg(0)+1);		// PC+4	
+		}
 		// ID
 		/*
 		0 -> instruction add 0 sub 1 load 2 sd 3 beq 4
@@ -179,8 +191,35 @@ int main() {
 		aluMux.setInput_2(id_ex.getReg(14));	// get offset
 
 		alu.setOperation(id_ex.getReg(13));
-		alu.setInput(id_ex.getReg(5), aluMux.getOutput());
+		// 
 		
+		if(ex_mem.getReg(9) && ex_mem.getReg(1) != 0 && ex_mem.getReg(1) == id_ex.getReg(2))
+			alu.setInput_1(ex_mem.getReg(5));
+		else if(mem_wb.getReg(7) && mem_wb.getReg(1) != 0 && mem_wb.getReg(1) == id_ex.getReg(2)) {
+			if(mem_wb.getReg(9)) // memRead
+				alu.setInput_1(mem_wb.getReg(5));
+			else 
+				alu.setInput_1(mem_wb.getReg(6));
+		}
+		else {
+			alu.setInput_1(id_ex.getReg(5));
+		}
+		if(ex_mem.getReg(9) && ex_mem.getReg(1) != 0 && ex_mem.getReg(1) == id_ex.getReg(3))
+			alu.setInput_2(ex_mem.getReg(5));
+		else if(mem_wb.getReg(7) && mem_wb.getReg(1) != 0 && mem_wb.getReg(1) == id_ex.getReg(3))
+			if(mem_wb.getReg(9)){
+				alu.setInput_2(mem_wb.getReg(5));
+				cout << " reading "<< mem_wb.getReg(5) << " for alu" << endl;
+				}
+			else {
+				alu.setInput_2(mem_wb.getReg(6));
+				cout << "AKUUUU" << endl;
+				}
+		else {
+			alu.setInput_2(aluMux.getOutput());
+		}
+		
+	cout << "alu input 1: " << alu.input_1 << " alu input 2: " << alu.input_2 << endl;
 		adder.setInput(id_ex.getReg(4), id_ex.getReg(14));	// calculates the address for branch
 
 		ex_mem.setReg(0, id_ex.getReg(0));
@@ -199,11 +238,10 @@ int main() {
 		
 		
 		int branch;
-		branch = ex_mem.getReg(6) & ex_mem.getReg(13);	// zero AND pcSrc
+		branch = ex_mem.getReg(6) & ex_mem.getReg(14);	// zero AND pcSrc 
 		
-		
-		dm.setMemWrite(ex_mem.getReg(12));
 		dm.setMemRead(ex_mem.getReg(11));
+		dm.setMemWrite(ex_mem.getReg(12));
 		cout<<"Write: "<<ex_mem.getReg(12)<<endl;
 		cout<<"Read: "<<ex_mem.getReg(11)<<endl;
 		
@@ -222,10 +260,11 @@ int main() {
 		mem_wb.setReg(6, ex_mem.getReg(5));	// address
 		mem_wb.setReg(7, ex_mem.getReg(9));	// regWrite
 		mem_wb.setReg(8, ex_mem.getReg(13));	// memToReg
+		mem_wb.setReg(9, ex_mem.getReg(11));	// memRead
 		
 		writeMux.setSelect(mem_wb.getReg(8));
-		writeMux.setInput_1(mem_wb.getReg(5));
-		writeMux.setInput_2(mem_wb.getReg(6));
+		writeMux.setInput_1(mem_wb.getReg(6)); // alu result
+		writeMux.setInput_2(mem_wb.getReg(5)); // mem[alu result]
 		
 		registers.setRegWrite(mem_wb.getReg(7));
 		registers.setReg(mem_wb.getReg(1),writeMux.getOutput());
@@ -238,26 +277,25 @@ int main() {
 		mem_wb.update();
 		PC.update();
 		
-		for(int i= 0; i < 3; i++)
+		for(int i= 0; i < 5; i++)
 		cout << "x" << i+1 << " " << registers.getReg(i+1) << endl;
 		
-		cout<<endl;
+		cout<<"PC: " << PC.getReg(0) << endl;
 		
 	
 
 	}
 
 
-
 	//int clk = 0;
 	
 		dm.setMemRead(true);
-	cout<<"hey"<<dm.read(28)<<endl;
+	cout<<"hey"<<dm.read(6)<<endl;
 	dm.setMemRead(false);
 	for(int i= 0; i < 3; i++)
 		cout << "x" << i+1 << " " << registers.getReg(i+1) << endl;
 
-cout<<"hey"<<endl;
+
 
  return 0;
  

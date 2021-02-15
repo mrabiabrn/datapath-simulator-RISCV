@@ -33,6 +33,7 @@ void ControlUnit::setOperation(int operation){
 	else if(operation == 4) {
 		this->regWrite = this->aluSrc = this->memRead = true;
 		this->aluOp = 0;
+		this->memToReg = 1;
 	}
 	else if(operation == 5) {
 		this->aluSrc = this->memWrite = true;

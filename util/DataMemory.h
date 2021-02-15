@@ -5,8 +5,8 @@ class DataMemory
 {
 private:
     std::map<int,int> dataMap;
-    bool memRead;
-    bool memWrite;
+    bool memRead = false;
+    bool memWrite = false;
  
 public:
 

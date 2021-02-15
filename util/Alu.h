@@ -4,14 +4,16 @@
 class Alu
 {
 private:
-    int input_1;
-    int input_2;
-    int operation;
+   
  
 public:
     Alu(int input_1, int input_2, int operation);
     Alu();
  
+ 
+ 	 int input_1;
+    int input_2;
+    int operation;
     void setInput_1(int input_1);
     void setInput_2(int input_2);
     void setInput(int input_1, int input_2);
