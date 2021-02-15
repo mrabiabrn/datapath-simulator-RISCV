@@ -1,4 +1,10 @@
-ld x1,0(x2)
-beq x2,x3 ,loop 
-loop :
-add x2,x3, x4
+add x2,x1,x3
+add x1,x3,x3
+add x5,x5,x5
+add x5,x5,x5
+add x5,x5,x5
+add x5,x5,x5
+add x5,x5,x5
+add x5,x5,x5
+add x5,x5,x5
+add x5,x5,x5

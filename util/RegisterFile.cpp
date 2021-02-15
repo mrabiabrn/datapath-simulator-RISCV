@@ -20,7 +20,17 @@ RegisterFile::RegisterFile(int size, bool regWrite) {
  */
 void RegisterFile::update() {
 
+
 	this->registers = this->temp;
+	
+	/*
+	for(int i=0; i < registers.size(); i++) {
+		this->registers[i] = this->temp[i];
+		this->temp[i] = 0;
+		}
+
+	*/	
+		
 	
 }
 
@@ -38,7 +48,10 @@ void RegisterFile::getReg(long& reg1, int indx1) {
 
 long RegisterFile::getReg(int indx1) {
 
-	if(indx1 >= )
+	if(indx1 >= this->registers.size())
+		return 0;
+		
+		
 	return this->registers[indx1];
 	
 }

@@ -24,6 +24,8 @@ void Mux::setSelect(bool select)
     this->select = select;
 }
 
+
+
 void Mux::setInput_1(int input_1){
     this->input_1 = input_1;
 }
