@@ -1,0 +1,7 @@
+loop:
+add x1, x1,x1
+beq x1,x2,loop
+add x1,x1,x1
+beq x1, x8,loop
+add x1,x1,x1
+
