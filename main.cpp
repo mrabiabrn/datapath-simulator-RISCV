@@ -104,7 +104,7 @@ int main() {
 		}
 		else if(inst[0] == "sd" ){
 			if_id.setReg(1,-1); 				// set reg1 to -1
-			if_id.setReg(5, stoi(inst[2]));	   	// offset
+			if_id.setReg(5, stoi(inst[2]));	   		// offset
 			if_id.setReg(2, stoi(inst[3].substr(1))); 	// reg2
 			if_id.setReg(3, stoi(inst[1].substr(1))); 	// reg1
 		
@@ -112,7 +112,7 @@ int main() {
 		}
 		else if(inst[0] == "beq"){
 			if_id.setReg(1,-1); 				// set regd to -1
-			if_id.setReg(5, stoi(inst[3]));		// offset
+			if_id.setReg(5, stoi(inst[3]));			// offset
 			if_id.setReg(2, stoi(inst[2].substr(1)));	// reg1
 			if_id.setReg(3, stoi(inst[1].substr(1))); 	// regd
 			
@@ -168,12 +168,13 @@ int main() {
 		bool isStall=false;
 		long pc1=0;
 		long pc2=0;
+		
 		// LOAD-USE HAZARD DETECTION
 		if(id_ex.getReg(9) && ((id_ex.getReg(1) == if_id.getReg(2) )|| (id_ex.getReg(1) ==  if_id.getReg(3)) )) {
 			for(int i=0;i<6;i++){
 				if_id.setReg(i,if_id.getReg(i));
 			}
-		 	control.setOperation(7);	// set instruction as nop, 
+		 	control.setOperation(7);	// set instruction as nop 
 		 	PC.setReg(0,PC.getReg(0));
 			isStall=true;
 			pc1=if_id.getReg(4);
@@ -182,13 +183,12 @@ int main() {
 		 	cout<<"Stall1"<<endl;
 		}
 		else {
-			//if_id.setRegWrite(true);
-			PC.setReg(0,PC.getReg(0)+1);		// PC+4	
+			PC.setReg(0,PC.getReg(0)+1);		// PC+1
 		}
 
-		// FORWARDING (MEM/WB -> IF/ID)... two instruction after ld
+		// FORWARDING (MEM/WB -> IF/ID)... three cycle after ld or arithmetic
 		cout<<id_ex.getReg(3)<<id_ex.getReg(2)<<endl;
-		if(mem_wb.getReg(7)  && mem_wb.getReg(1) != 0 && mem_wb.getReg(1) == if_id.getReg(3)){
+		if(mem_wb.getReg(7)  && mem_wb.getReg(1) != 0 && mem_wb.getReg(1) == if_id.getReg(3)){		// compare reg2
 			if(mem_wb.getReg(9)){
 				id_ex.setReg(5,mem_wb.getReg(5));
 
@@ -199,7 +199,7 @@ int main() {
 			cout<<mem_wb.getReg(5)<<endl;
 			//cout << " reading "<< mem_wb.getReg(5) << " for alu" << endl;
 		}
-		if(mem_wb.getReg(7)  && mem_wb.getReg(1) != 0 && mem_wb.getReg(1) == if_id.getReg(2)){
+		if(mem_wb.getReg(7)  && mem_wb.getReg(1) != 0 && mem_wb.getReg(1) == if_id.getReg(2)){		// compare reg1
 			if(mem_wb.getReg(9)){
 				id_ex.setReg(6,mem_wb.getReg(5));
 
@@ -207,9 +207,8 @@ int main() {
 				id_ex.setReg(6,mem_wb.getReg(6));
 			}
 		}
+		
 		//BRANCH
-	
-
 		if(if_id.getReg(0)==6){ //Branchse ve load dan sonraysa one more stall 
 
 				if(ex_mem.getReg(9) && ex_mem.getReg(1) != 0 && ex_mem.getReg(1) == if_id.getReg(2)){
