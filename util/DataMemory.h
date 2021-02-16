@@ -18,7 +18,7 @@ public:
     
     void setMemRead(bool memRead);
     void setMemWrite(bool memWrite);
-
+    void printData();
     long read(int address);
     void write(int address, long data);
 };

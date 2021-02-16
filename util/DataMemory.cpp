@@ -69,3 +69,12 @@ void DataMemory::write(int address, long data){
         this->dataMap[address] = data;
     }
 }
+
+void DataMemory::printData(){
+	int i=1;
+	for (std::map<int,long>::iterator it=(this->dataMap).begin(); it!=(this->dataMap).end(); ++it){
+    	std::cout <<"mem("<< it->first << ") = " << it->second << (i%3==0?'\n':'\t');
+		i++;
+	}
+	
+}

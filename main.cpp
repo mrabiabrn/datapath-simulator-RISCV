@@ -50,13 +50,13 @@ int main() {
 	ControlUnit control = ControlUnit();
 
 	
-	
+	map<pair<int,long>,long> stallMap;
 	
 	registers.setRegWrite(true);
-	registers.setReg(1,5);
-	registers.setReg(2,10);
-	registers.setReg(3,15);
-	registers.setReg(5,3);
+	registers.setReg(1,1);
+	registers.setReg(2,2);
+	registers.setReg(8,8);
+	registers.setReg(11,11);
 	registers.update();
 	registers.setRegWrite(false);
 
@@ -174,6 +174,7 @@ int main() {
 		 	control.setOperation(7);	// set instruction as nop, 
 		 	PC.setReg(0,PC.getReg(0));
 			isStall=true;
+			stallMap[make_pair(clk,if_id.getReg(4))] = id_ex.getReg(4);
 		 	cout<<"Stall1"<<endl;
 		}
 		else {
@@ -205,6 +206,7 @@ int main() {
 				control.setOperation(7);	// set instruction as nop, 
 				PC.setReg(0,PC.getReg(0)+1);
 				isStall=true;
+				stallMap[make_pair(clk,if_id.getReg(4))] = ex_mem.getReg(4);
 				cout<<"Stall2"<<endl;
 			}
 			else {
@@ -217,6 +219,7 @@ int main() {
 				PC.setReg(0,PC.getReg(0)+1);
 				
 				isStall=true;
+				stallMap[make_pair(clk,if_id.getReg(4))] = id_ex.getReg(4);
 				cout<<"Stall3"<<endl;
 
 				}
@@ -260,6 +263,7 @@ int main() {
 						if_id.setReg(0,7);
 						control.setOperation(7);	// set instruction as nop, 
 						isStall=true;
+						stallMap[make_pair(clk,if_id.getReg(4))] = -1;
 						cout<<"Stall4"<<endl;
 					}
 					else{
@@ -406,26 +410,53 @@ cout<<"id_ex is set to:"<<endl;
 		
 	registers.update();
 	PC.update();
-		/*
-		for(int i= 0; i < 7; i++)
+
+		for(int i= 0; i < 1; i++)
 		cout << "x" << i+1 << " " << registers.getReg(i+1) << endl;
 		
 		cout<<"PC: " << PC.getReg(0) << endl;
 		
 		cout<<endl;
-*/
+
 	}
 
 
 	
 	
-		dm.setMemRead(true);
-	cout<<"hey"<<dm.read(27)<<endl;
-	dm.setMemRead(false);
-	for(int i= 0; i < 8; i++)
-		cout << "x" << i+1 << " " << registers.getReg(i+1) << endl;
-cout<<to_string(stall)<<" "<<clk<<endl;
+	cout<<"Final Values of Registers: "<<endl;
+	for(int i = 0; i < 8; i++){
+		for(int j = 0; j < 4 ;j++)
+			cout << "x" << to_string(i*4+j) << " " << registers.getReg(i*4+j) << "\t";
+	}
+	cout<<endl;
+	cout<<endl;
+	cout<<"Saved Data Memory: "<<endl;
+	dm.printData();
+	cout<<endl;
+	cout<<"CPI: "<<to_string(double(clk)/(clk-4-stall))<<endl;
+	cout<<"Cycles: "<<to_string(clk)<<endl;
+	cout<<"Stalls: "<<to_string(stall)<<endl;
+	for (std::map<pair<int,long>,long>::iterator it=(stallMap).begin(); it!=(stallMap).end(); ++it){
+		vector<string> ins;
+		PC.setReg(0,it->first.second);
+		PC.update();
+		im.readInstruction(ins);
+		cout<<"On cycle "<<it->first.first<<" PC:"<<PC.getReg(0)<<" ";
+		cout<<ins[0]<<" "<<ins[1]<<", "<<ins[2]<<", "<<ins[3];
+		PC.setReg(0,it->second);
+		PC.update();
+		if(PC.getReg(0)==-1){
+			cout<<" since branch not taken was not true"<<endl;
+		}
+		else{
+			im.readInstruction(ins);
+			cout<<" depends on PC:"<<PC.getReg(0)<<" ";
+			cout<<ins[0]<<" "<<ins[1]<<", "<<ins[2]<<", "<<ins[3]<<endl;
+		}
+		
+		
 
+	}
 
  return 0;
  

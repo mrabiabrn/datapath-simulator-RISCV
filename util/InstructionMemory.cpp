@@ -76,7 +76,6 @@ void InstructionMemory::readInstruction(vector<string>& inst) {
 			inst.push_back("x0");
 			break;
 		}
-		cout<<"hey"<<endl;
 		long reg = 0;
 		this->PC->getReg(reg,0);
 		inst = (this->instructions)[reg];
@@ -87,7 +86,6 @@ void InstructionMemory::readInstruction(vector<string>& inst) {
 			continue;
 		}
 		if(!inst[0].compare("beq")){
-			cout<<"BURASI: "<<labels.find(inst[3])->second - PC->getReg(0)<<endl;
 			inst[3] = to_string(labels.find(inst[3])->second - PC->getReg(0));
 		}
 
@@ -100,7 +98,7 @@ void InstructionMemory::readInstruction(vector<string>& inst) {
 
 int InstructionMemory::getInstructionNum() {
 
-	return (this->instructions).size();
+	return (this->instructions).size()-this->labels.size();
 
 }
 	
