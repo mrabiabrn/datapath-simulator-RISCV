@@ -16,31 +16,7 @@ using namespace std;
 
 int main() {
 
-	/*
-	RegisterFile r = RegisterFile(32,true);
-	r.writeReg(1,3);
-	r.writeReg(2,4);
-	r.writeReg(3,6);
-	
-	int reg1, reg2;
-	
-	r.update();
-	r.readReg(reg1,reg2,1,2);
-	
-	cout << reg1 << " " << reg2 << endl;
-	
-	ControlUnit c = ControlUnit("ld");
-	cout << c.getRegWrite() << " " << c.getMemRead() << endl;*/
-	
-	/*
-	InstructionMemory im = InstructionMemory("input.txt");
-	for(int i = 0; i < im.instructions.size(); i++) {
-	
-		for (int j = 0; j < 4; j++)
-			cout<< im.instructions[i][j] << endl;
-	
-	}
-	*/
+	// code of the instructions
 	map<string, int> instonum;
 	instonum["add"] = 0;
 	instonum["sub"] = 1;
@@ -57,13 +33,13 @@ int main() {
 	InstructionMemory im = InstructionMemory("input.txt", &PC);
 	RegisterFile registers = RegisterFile(32, 0);
 	Alu alu = Alu();
-	DataMemory dm = DataMemory();
-	Mux aluMux = Mux();
-	Mux pcMux = Mux();
-	Mux writeMux = Mux();
+	DataMemory dm = DataMemory("memory.txt");
+	Mux aluMux = Mux();				// chooses the second input for alu
+	Mux pcMux = Mux();				// chooses next PC value when beq instruction comes 
+	Mux writeMux = Mux();				// chooses the value that will be written to register file at the end of the cycle
 	Alu adder = Alu(0,0,0);
-	Alu branchAlu = Alu(0,0,1);
-	Alu branchAluAddress = Alu(0,0,0);
+	Alu branchAlu = Alu(0,0,1);			// compares two registers in branch instruction (reg1-reg2)
+	Alu branchAluAddress = Alu(0,0,0);		// calculates PC + offset for branch instr.
 
 
 	RegisterFile if_id = RegisterFile(6, 1);
@@ -73,7 +49,8 @@ int main() {
 
 	ControlUnit control = ControlUnit();
 
-	int clk = 0;
+	
+	
 	
 	registers.setRegWrite(true);
 	registers.setReg(1,5);
@@ -82,23 +59,24 @@ int main() {
 	registers.setReg(5,3);
 	registers.update();
 	registers.setRegWrite(false);
-	dm.setMemWrite(true);
-	dm.write(28,4);
-	dm.setMemWrite(false);
+
 	dm.setMemRead(true);
-	cout<<dm.read(28)<<endl;
+	cout<<"DM "<< 28<<":" << dm.read(28)<<endl;
+	cout<<"DM "<< 19<<":" << dm.read(19)<<endl;
+	cout<<"DM "<< 3<<":" << dm.read(3)<<endl;
 	dm.setMemRead(false);
 	for(int i= 0; i < 3; i++)
 		cout << "x" << i+1 << " " << registers.getReg(i+1) << endl;
 	
 	cout << endl;
 
-	int stall = 0;
+	int clk = 0;
+	int stall = 0;		// number of stalls
 	
-
-	while(PC.getReg(0)<im.getInstructionNum()+4){
+	while(PC.getReg(0)<im.getInstructionNum()+4){	 // total num of clock cycles (without stalls) = num of instructions + 4... 
 		clk++;
-		// IF
+		
+		/************************** IF STAGE ***********************************************/
 		vector<string> inst;
 		im.readInstruction(inst);
 		/*
@@ -108,24 +86,24 @@ int main() {
 		3 -> reg2
 		4 -> PC
 		*
-		* give 2 and 3 to alu
+		* ALU inputs will be 2 & 3 
 		*/
-	//sd de offset regd
+
 		cout<<"Instruction taken:" << inst[0]<<inst[1]<<inst[2]<<inst[3]<<endl;
 
-		if_id.setReg(0, instonum.find(inst[0])->second);
+		if_id.setReg(0, instonum.find(inst[0])->second);	// 0 -> instruction code
 		
 		int offset;
 	
 		if(inst[0] == "ld"){
-			if_id.setReg(1, stoi(inst[1].substr(1)));	// rdest
+			if_id.setReg(1, stoi(inst[1].substr(1)));	// regd
 			if_id.setReg(2, stoi(inst[3].substr(1))); 	// reg1
 			if_id.setReg(5, stoi(inst[2])); 		// offset
-			if_id.setReg(3,-1); 
+			if_id.setReg(3,-1); 				// set reg2 to -1
 	
 		}
 		else if(inst[0] == "sd" ){
-			if_id.setReg(1,-1); 
+			if_id.setReg(1,-1); 				// set reg1 to -1
 			if_id.setReg(5, stoi(inst[2]));	   	// offset
 			if_id.setReg(2, stoi(inst[3].substr(1))); 	// reg2
 			if_id.setReg(3, stoi(inst[1].substr(1))); 	// reg1
@@ -133,10 +111,10 @@ int main() {
 			
 		}
 		else if(inst[0] == "beq"){
-			if_id.setReg(1,-1); 
-			if_id.setReg(5, stoi(inst[3]));		 // offset
-			if_id.setReg(2, stoi(inst[2].substr(1)));	 // reg1
-			if_id.setReg(3, stoi(inst[1].substr(1))); 	 // regd
+			if_id.setReg(1,-1); 				// set regd to -1
+			if_id.setReg(5, stoi(inst[3]));		// offset
+			if_id.setReg(2, stoi(inst[2].substr(1)));	// reg1
+			if_id.setReg(3, stoi(inst[1].substr(1))); 	// regd
 			
 		}
 		else{
@@ -147,7 +125,8 @@ int main() {
 		}
 
 		
-		if_id.setReg(4, PC.getReg(0));
+		if_id.setReg(4, PC.getReg(0));	// 4 -> PC
+		
 		cout<<"if-id is set to:"<<endl;
 		for(int i = 0; i < 6; i++)
 		 		cout<< if_id.temp[i]<<" ";
@@ -158,7 +137,7 @@ int main() {
 		 		cout<< if_id.registers[i]<<" ";
 		cout<<endl;
 
-		// ID
+		/************************ ID STAGE ***********************/
 		/*
 		0 -> instruction add 0 sub 1 load 2 sd 3 beq 4
 		1 -> regd add regd,reg1,reg2  ld regd offset(reg1) -> offset reg2
@@ -176,7 +155,7 @@ int main() {
 		13->aluOp);
 		*/
 
-		control.setOperation(if_id.getReg(0));
+		control.setOperation(if_id.getReg(0)); 
 		id_ex.setReg(0, if_id.getReg(0));
 		id_ex.setReg(1, if_id.getReg(1));
 		id_ex.setReg(2, if_id.getReg(2));
@@ -185,6 +164,7 @@ int main() {
 		cout<<registers.getReg(if_id.getReg(2))<<endl;
 		id_ex.setReg(5, registers.getReg(if_id.getReg(2))); // read reg1 value
 		id_ex.setReg(6, registers.getReg(if_id.getReg(3))); // read reg2 value
+		
 		bool isStall=false;
 		if(id_ex.getReg(9) && ((id_ex.getReg(1) == if_id.getReg(2) )|| (id_ex.getReg(1) ==  if_id.getReg(3)) )) {
 			for(int i=0;i<6;i++){

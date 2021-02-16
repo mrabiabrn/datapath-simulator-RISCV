@@ -1,21 +1,26 @@
 #ifndef DATAMEMORY_H
 #define DATAMEMORY_H
 #include <map>
+#include <string>
+
+using namespace std;
+
 class DataMemory
 {
 private:
-    std::map<int,int> dataMap;
+    std::map<int,long> dataMap;
     bool memRead = false;
     bool memWrite = false;
  
 public:
 
- 
+    DataMemory(string filePath);
+    
     void setMemRead(bool memRead);
     void setMemWrite(bool memWrite);
 
-    int read(int address);
-    void write(int address, int data);
+    long read(int address);
+    void write(int address, long data);
 };
  
 #endif

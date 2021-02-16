@@ -18,7 +18,7 @@ InstructionMemory::InstructionMemory(string filePath, RegisterFile* PC) {
 
 	//PC = 0;
 	this->PC = PC;
-	ifstream file("input.txt");
+	ifstream file(filePath);
 	string line;
 	int i = 0;
 	while(getline(file, line)) {
