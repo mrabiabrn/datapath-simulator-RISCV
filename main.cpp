@@ -49,6 +49,7 @@ int main() {
 	instonum["ld"] = 4;
 	instonum["sd"] = 5;
 	instonum["beq"] = 6;
+	instonum["nop"] = 7;
 
 
 
@@ -61,6 +62,9 @@ int main() {
 	Mux pcMux = Mux();
 	Mux writeMux = Mux();
 	Alu adder = Alu(0,0,0);
+	Alu branchAlu = Alu(0,0,1);
+	Alu branchAluAddress = Alu(0,0,0);
+
 
 	RegisterFile if_id = RegisterFile(6, 1);
 	RegisterFile id_ex = RegisterFile(15, 1);
@@ -88,9 +92,12 @@ int main() {
 		cout << "x" << i+1 << " " << registers.getReg(i+1) << endl;
 	
 	cout << endl;
+
+	int stall = 0;
 	
 
-	while(PC.getReg(0)<im.getInstructionNum()){
+	while(PC.getReg(0)<im.getInstructionNum()+4){
+		clk++;
 		// IF
 		vector<string> inst;
 		im.readInstruction(inst);
@@ -178,23 +185,25 @@ int main() {
 		cout<<registers.getReg(if_id.getReg(2))<<endl;
 		id_ex.setReg(5, registers.getReg(if_id.getReg(2))); // read reg1 value
 		id_ex.setReg(6, registers.getReg(if_id.getReg(3))); // read reg2 value
-
-		if(id_ex.getReg(9) && ((id_ex.getReg(1) == if_id.getReg(2) )|| (id_ex.getReg(1) ==  if_id.getReg(3)))) {
+		bool isStall=false;
+		if(id_ex.getReg(9) && ((id_ex.getReg(1) == if_id.getReg(2) )|| (id_ex.getReg(1) ==  if_id.getReg(3)) )) {
 			for(int i=0;i<6;i++){
 				if_id.setReg(i,if_id.getReg(i));
 			}
 		 	control.setOperation(7);	// set instruction as nop, 
 		 	PC.setReg(0,PC.getReg(0));
-
-		 	cout<<"Stall"<<endl;
+			isStall=true;
+		 	cout<<"Stall1"<<endl;
 		}
 		else {
 			if_id.setRegWrite(true);
 			PC.setReg(0,PC.getReg(0)+1);		// PC+4	
 		}
 
+
 		cout<<id_ex.getReg(3)<<id_ex.getReg(2)<<endl;
 		if(mem_wb.getReg(9)  && mem_wb.getReg(1) != 0 && mem_wb.getReg(1) == if_id.getReg(3)){
+			
 			id_ex.setReg(6,mem_wb.getReg(5));
 			cout<<mem_wb.getReg(5)<<endl;
 			//cout << " reading "<< mem_wb.getReg(5) << " for alu" << endl;
@@ -204,6 +213,86 @@ int main() {
 			cout<<mem_wb.getReg(5)<<endl;
 			//cout << " reading "<< mem_wb.getReg(5) << " for alu" << endl;
 		}
+		//BRANCH
+	
+
+		if(if_id.getReg(0)==6){ //Branchse ve load dan sonraysa one more stall 
+			if(ex_mem.getReg(11) && ((ex_mem.getReg(1) == if_id.getReg(2) )|| (ex_mem.getReg(1) ==  if_id.getReg(3)))) {
+				for(int i=0;i<6;i++){
+					if_id.setReg(i,if_id.getReg(i));
+				}
+				control.setOperation(7);	// set instruction as nop, 
+				PC.setReg(0,PC.getReg(0)+1);
+				isStall=true;
+				cout<<"Stall2"<<endl;
+			}
+			else {
+				// Sonra aluysa one stall
+				if(id_ex.getReg(7) && id_ex.getReg(1) != 0 && (id_ex.getReg(1) == if_id.getReg(2) || id_ex.getReg(1) == if_id.getReg(3))){
+					for(int i=0;i<6;i++){
+					if_id.setReg(i,if_id.getReg(i));
+				}
+				control.setOperation(7);	// set instruction as nop, 
+				PC.setReg(0,PC.getReg(0)+1);
+				
+				isStall=true;
+				cout<<"Stall3"<<endl;
+
+				}
+				else{
+					
+					// Sonraki 2 stage de bak 
+					if(ex_mem.getReg(9) && ex_mem.getReg(1) != 0 && ex_mem.getReg(1) == if_id.getReg(2))
+						branchAlu.setInput_1(ex_mem.getReg(5));
+					else if(mem_wb.getReg(7) && mem_wb.getReg(1) != 0 && mem_wb.getReg(1) == if_id.getReg(2)) {
+						if(mem_wb.getReg(9)){
+						branchAlu.setInput_1(mem_wb.getReg(5));
+
+						}else
+						branchAlu.setInput_1(mem_wb.getReg(6));
+						}
+					else {
+						branchAlu.setInput_1(registers.getReg(if_id.getReg(2)));
+					}
+					if(ex_mem.getReg(9) && ex_mem.getReg(1) != 0 && ex_mem.getReg(1) == if_id.getReg(3))
+						branchAlu.setInput_2(ex_mem.getReg(5));
+					else if(mem_wb.getReg(7) && mem_wb.getReg(1) != 0 && mem_wb.getReg(1) == if_id.getReg(3))
+
+						if(mem_wb.getReg(9)){
+						branchAlu.setInput_2(mem_wb.getReg(5));
+
+						}else
+						branchAlu.setInput_2(mem_wb.getReg(6));
+
+					else {
+						branchAlu.setInput_2(registers.getReg(if_id.getReg(3)));
+					}
+
+					if(branchAlu.getZero()){
+						branchAluAddress.setInput_1(if_id.getReg(4));
+						branchAluAddress.setInput_2(if_id.getReg(5));
+						
+						PC.setReg(0, branchAluAddress.getOutput() );
+						for(int i=0;i<6;i++){
+							if_id.setReg(i,if_id.getReg(i));
+						}
+						if_id.setReg(0,7);
+						control.setOperation(7);	// set instruction as nop, 
+						isStall=true;
+						cout<<"Stall4"<<endl;
+					}
+					else{
+						PC.setReg(0,if_id.getReg(4)+1);
+					}
+
+							// PC+4	
+				}
+				
+			}
+		}
+		if(isStall)
+			stall++;
+
 
 
 		//cout<<if_id.getReg(2)<<" Reg1: "<<registers.getReg(if_id.getReg(2))<<endl;
@@ -224,10 +313,12 @@ cout<<"id_ex is set to:"<<endl;
 		//cout<<"AluMux "<<id_ex.getReg(6)<<" "<<id_ex.getReg(14)<<endl;
 		aluMux.setInput_1(id_ex.getReg(6));
 		aluMux.setInput_2(id_ex.getReg(14));	// get offset
-
+		cout<<"ALU MUX op: "<<aluMux.getOutput()<<endl;
 		alu.setOperation(id_ex.getReg(13));
 		// 
 		//cout<<"MemWrite"<<mem_wb.getReg(7)<<ex_mem.getReg(1)<<endl;
+		ex_mem.setReg(8, id_ex.getReg(6)); // read second
+
 		if(ex_mem.getReg(9) && ex_mem.getReg(1) != 0 && ex_mem.getReg(1) == id_ex.getReg(2))
 			alu.setInput_1(ex_mem.getReg(5));
 		else if(mem_wb.getReg(7) && mem_wb.getReg(1) != 0 && mem_wb.getReg(1) == id_ex.getReg(2)) {
@@ -240,19 +331,22 @@ cout<<"id_ex is set to:"<<endl;
 		else {
 			alu.setInput_1(id_ex.getReg(5));
 		}
-		if(ex_mem.getReg(9) && ex_mem.getReg(1) != 0 && ex_mem.getReg(1) == id_ex.getReg(3))
-			alu.setInput_2(ex_mem.getReg(5));
+		if(ex_mem.getReg(9) && ex_mem.getReg(1) != 0 && ex_mem.getReg(1) == id_ex.getReg(3)){
+			ex_mem.setReg(8,ex_mem.getReg(5));
+				aluMux.setInput_1(ex_mem.getReg(5));
+		}
 		else if(mem_wb.getReg(7) && mem_wb.getReg(1) != 0 && mem_wb.getReg(1) == id_ex.getReg(3))
 			
 			if(mem_wb.getReg(9)){
-				alu.setInput_2(mem_wb.getReg(5));
+				ex_mem.setReg(8,mem_wb.getReg(5));
+				aluMux.setInput_1(mem_wb.getReg(5));
 
-			}else
-				alu.setInput_2(mem_wb.getReg(6));
-			
-		else {
-			alu.setInput_2(aluMux.getOutput());
-		}
+			}else{
+				ex_mem.setReg(8,mem_wb.getReg(6));
+				aluMux.setInput_1(mem_wb.getReg(6));
+			}
+		
+		alu.setInput_2(aluMux.getOutput());
 		
 	    cout << "alu input 1: " << alu.input_1 << " alu input 2: " << alu.input_2 << endl;
 		adder.setInput(id_ex.getReg(4), id_ex.getReg(14));	// calculates the address for branch
@@ -266,7 +360,6 @@ cout<<"id_ex is set to:"<<endl;
 		//cout<<"Alu"<<alu.getOutput()<<endl;
 		ex_mem.setReg(6, alu.getZero());
 		ex_mem.setReg(7, adder.getOutput());
-		ex_mem.setReg(8, id_ex.getReg(6)); // read second
 		
 		for(int i= 0; i < 7; i++)
 			ex_mem.setReg(i+9, id_ex.getReg(i+7));
@@ -332,25 +425,25 @@ cout<<"id_ex is set to:"<<endl;
 		
 	registers.update();
 	PC.update();
-		
-		for(int i= 0; i < 5; i++)
+		/*
+		for(int i= 0; i < 7; i++)
 		cout << "x" << i+1 << " " << registers.getReg(i+1) << endl;
 		
 		cout<<"PC: " << PC.getReg(0) << endl;
 		
 		cout<<endl;
-
+*/
 	}
 
 
-	//int clk = 0;
+	
 	
 		dm.setMemRead(true);
-	cout<<"hey"<<dm.read(6)<<endl;
+	cout<<"hey"<<dm.read(27)<<endl;
 	dm.setMemRead(false);
-	for(int i= 0; i < 3; i++)
+	for(int i= 0; i < 8; i++)
 		cout << "x" << i+1 << " " << registers.getReg(i+1) << endl;
-
+cout<<to_string(stall)<<" "<<clk<<endl;
 
 
  return 0;

@@ -3,6 +3,7 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <iostream>
 #include <string>
 
 using namespace std;
@@ -66,15 +67,28 @@ InstructionMemory::InstructionMemory(string filePath, RegisterFile* PC) {
 void InstructionMemory::readInstruction(vector<string>& inst) {
 	// Son instruction label olmamalı
 	while(true){
+		if(this->PC->getReg(0)>=this->instructions.size()){
+			cout<<this->PC->getReg(0)<<endl;
+			
+			inst.push_back( "nop");
+			inst.push_back("x0");
+			inst.push_back("x0");
+			inst.push_back("x0");
+			break;
+		}
+		cout<<"hey"<<endl;
 		long reg = 0;
 		this->PC->getReg(reg,0);
 		inst = (this->instructions)[reg];
 		if(inst.size() == 1){
 			this->PC->setReg(0,reg+1);
+			cout<<this->PC->getReg(0)<<endl;
+			this->PC->update();
 			continue;
 		}
 		if(!inst[0].compare("beq")){
-			inst[3] = labels.find(inst[3])->second - PC->getReg(0);
+			cout<<"BURASI: "<<labels.find(inst[3])->second - PC->getReg(0)<<endl;
+			inst[3] = to_string(labels.find(inst[3])->second - PC->getReg(0));
 		}
 
 		break;
