@@ -166,6 +166,7 @@ int main() {
 		id_ex.setReg(6, registers.getReg(if_id.getReg(3))); // read reg2 value
 		
 		bool isStall=false;
+		// LOAD-USE HAZARD DETECTION
 		if(id_ex.getReg(9) && ((id_ex.getReg(1) == if_id.getReg(2) )|| (id_ex.getReg(1) ==  if_id.getReg(3)) )) {
 			for(int i=0;i<6;i++){
 				if_id.setReg(i,if_id.getReg(i));
@@ -176,11 +177,11 @@ int main() {
 		 	cout<<"Stall1"<<endl;
 		}
 		else {
-			if_id.setRegWrite(true);
+			//if_id.setRegWrite(true);
 			PC.setReg(0,PC.getReg(0)+1);		// PC+4	
 		}
 
-
+		// FORWARDING (MEM/WB -> IF/ID)... two instruction after ld
 		cout<<id_ex.getReg(3)<<id_ex.getReg(2)<<endl;
 		if(mem_wb.getReg(9)  && mem_wb.getReg(1) != 0 && mem_wb.getReg(1) == if_id.getReg(3)){
 			
