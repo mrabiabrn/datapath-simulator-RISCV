@@ -93,7 +93,7 @@ int main() {
 
 		if_id.setReg(0, instonum.find(inst[0])->second);	// 0 -> instruction code
 		
-		int offset;
+		
 	
 		if(inst[0] == "ld"){
 			if_id.setReg(1, stoi(inst[1].substr(1)));	// regd
