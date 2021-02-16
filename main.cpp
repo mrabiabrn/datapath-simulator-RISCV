@@ -53,10 +53,10 @@ int main() {
 	map<pair<int,long>,long> stallMap;
 	
 	registers.setRegWrite(true);
-	registers.setReg(1,1);
-	registers.setReg(2,2);
-	registers.setReg(8,8);
-	registers.setReg(11,11);
+	registers.setReg(1,5);
+	registers.setReg(2,10);
+	registers.setReg(3,15);
+	registers.setReg(5,11);
 	registers.update();
 	registers.setRegWrite(false);
 
@@ -73,7 +73,7 @@ int main() {
 	int clk = 0;
 	int stall = 0;		// number of stalls
 	
-	while(PC.getReg(0)<im.getInstructionNum()+4){	 // total num of clock cycles (without stalls) = num of instructions + 4... 
+	while(PC.getReg(0)<im.getInstructionNum()+5){	 // total num of clock cycles (without stalls) = num of instructions + 4... 
 		clk++;
 		
 		/************************** IF STAGE ***********************************************/
@@ -166,6 +166,8 @@ int main() {
 		id_ex.setReg(6, registers.getReg(if_id.getReg(3))); // read reg2 value
 		
 		bool isStall=false;
+		long pc1=0;
+		long pc2=0;
 		// LOAD-USE HAZARD DETECTION
 		if(id_ex.getReg(9) && ((id_ex.getReg(1) == if_id.getReg(2) )|| (id_ex.getReg(1) ==  if_id.getReg(3)) )) {
 			for(int i=0;i<6;i++){
@@ -174,7 +176,9 @@ int main() {
 		 	control.setOperation(7);	// set instruction as nop, 
 		 	PC.setReg(0,PC.getReg(0));
 			isStall=true;
-			stallMap[make_pair(clk,if_id.getReg(4))] = id_ex.getReg(4);
+			pc1=if_id.getReg(4);
+			pc2=id_ex.getReg(4);
+			//stallMap[make_pair(clk,if_id.getReg(4))] = id_ex.getReg(4);
 		 	cout<<"Stall1"<<endl;
 		}
 		else {
@@ -184,50 +188,34 @@ int main() {
 
 		// FORWARDING (MEM/WB -> IF/ID)... two instruction after ld
 		cout<<id_ex.getReg(3)<<id_ex.getReg(2)<<endl;
-		if(mem_wb.getReg(9)  && mem_wb.getReg(1) != 0 && mem_wb.getReg(1) == if_id.getReg(3)){
+		if(mem_wb.getReg(7)  && mem_wb.getReg(1) != 0 && mem_wb.getReg(1) == if_id.getReg(3)){
+			if(mem_wb.getReg(9)){
+				id_ex.setReg(5,mem_wb.getReg(5));
+
+			}else{
+				id_ex.setReg(5,mem_wb.getReg(6));
+			}
 			
-			id_ex.setReg(6,mem_wb.getReg(5));
 			cout<<mem_wb.getReg(5)<<endl;
 			//cout << " reading "<< mem_wb.getReg(5) << " for alu" << endl;
 		}
-		if(mem_wb.getReg(9)  && mem_wb.getReg(1) != 0 && mem_wb.getReg(1) == if_id.getReg(2)){
-			id_ex.setReg(5,mem_wb.getReg(5));
-			cout<<mem_wb.getReg(5)<<endl;
-			//cout << " reading "<< mem_wb.getReg(5) << " for alu" << endl;
+		if(mem_wb.getReg(7)  && mem_wb.getReg(1) != 0 && mem_wb.getReg(1) == if_id.getReg(2)){
+			if(mem_wb.getReg(9)){
+				id_ex.setReg(6,mem_wb.getReg(5));
+
+			}else{
+				id_ex.setReg(6,mem_wb.getReg(6));
+			}
 		}
 		//BRANCH
 	
 
 		if(if_id.getReg(0)==6){ //Branchse ve load dan sonraysa one more stall 
-			if(ex_mem.getReg(11) && ((ex_mem.getReg(1) == if_id.getReg(2) )|| (ex_mem.getReg(1) ==  if_id.getReg(3)))) {
-				for(int i=0;i<6;i++){
-					if_id.setReg(i,if_id.getReg(i));
-				}
-				control.setOperation(7);	// set instruction as nop, 
-				PC.setReg(0,PC.getReg(0)+1);
-				isStall=true;
-				stallMap[make_pair(clk,if_id.getReg(4))] = ex_mem.getReg(4);
-				cout<<"Stall2"<<endl;
-			}
-			else {
-				// Sonra aluysa one stall
-				if(id_ex.getReg(7) && id_ex.getReg(1) != 0 && (id_ex.getReg(1) == if_id.getReg(2) || id_ex.getReg(1) == if_id.getReg(3))){
-					for(int i=0;i<6;i++){
-					if_id.setReg(i,if_id.getReg(i));
-				}
-				control.setOperation(7);	// set instruction as nop, 
-				PC.setReg(0,PC.getReg(0)+1);
-				
-				isStall=true;
-				stallMap[make_pair(clk,if_id.getReg(4))] = id_ex.getReg(4);
-				cout<<"Stall3"<<endl;
 
+				if(ex_mem.getReg(9) && ex_mem.getReg(1) != 0 && ex_mem.getReg(1) == if_id.getReg(2)){
+branchAlu.setInput_1(ex_mem.getReg(5));
 				}
-				else{
-					
-					// Sonraki 2 stage de bak 
-					if(ex_mem.getReg(9) && ex_mem.getReg(1) != 0 && ex_mem.getReg(1) == if_id.getReg(2))
-						branchAlu.setInput_1(ex_mem.getReg(5));
+						
 					else if(mem_wb.getReg(7) && mem_wb.getReg(1) != 0 && mem_wb.getReg(1) == if_id.getReg(2)) {
 						if(mem_wb.getReg(9)){
 						branchAlu.setInput_1(mem_wb.getReg(5));
@@ -252,7 +240,33 @@ int main() {
 						branchAlu.setInput_2(registers.getReg(if_id.getReg(3)));
 					}
 
-					if(branchAlu.getZero()){
+					
+				if(id_ex.getReg(7) && id_ex.getReg(1) != 0 && (id_ex.getReg(1) == if_id.getReg(2) || id_ex.getReg(1) == if_id.getReg(3))){
+					for(int i=0;i<6;i++){
+					if_id.setReg(i,if_id.getReg(i));
+				}
+				control.setOperation(7);	// set instruction as nop, 
+				PC.setReg(0,PC.getReg(0));
+				
+				isStall=true;
+				pc1=if_id.getReg(4);
+				pc2=id_ex.getReg(4);
+				//stallMap[make_pair(clk,if_id.getReg(4))] = id_ex.getReg(4);
+				cout<<"Stall3"<<endl;
+
+				}
+				else if(ex_mem.getReg(11) && ((ex_mem.getReg(1) == if_id.getReg(2) )|| (ex_mem.getReg(1) ==  if_id.getReg(3)))) {
+				for(int i=0;i<6;i++){
+					if_id.setReg(i,if_id.getReg(i)+1);
+				}
+				control.setOperation(7);	// set instruction as nop, 
+				PC.setReg(0,if_id.getReg(4));
+				isStall=true;
+				pc1=if_id.getReg(4);
+				pc2=ex_mem.getReg(4);
+				//stallMap[make_pair(clk,if_id.getReg(4))] = ex_mem.getReg(4);
+				cout<<"Stall2"<<endl;
+			}else if(branchAlu.getZero()){
 						branchAluAddress.setInput_1(if_id.getReg(4));
 						branchAluAddress.setInput_2(if_id.getReg(5));
 						
@@ -263,20 +277,26 @@ int main() {
 						if_id.setReg(0,7);
 						control.setOperation(7);	// set instruction as nop, 
 						isStall=true;
-						stallMap[make_pair(clk,if_id.getReg(4))] = -1;
+						pc1=if_id.getReg(4);
+						pc2=-1;
+						//stallMap[make_pair(clk,if_id.getReg(4))] = -1;
 						cout<<"Stall4"<<endl;
-					}
-					else{
-						PC.setReg(0,if_id.getReg(4)+1);
-					}
-
-							// PC+4	
+					
+					}else{
+					
+						PC.setReg(0,PC.getReg(0)+1);
 				}
+			
+			// Sonraki 2 stage de bak 
+// Sonra aluysa one stall
 				
-			}
+			
 		}
-		if(isStall)
+		if(isStall){
+			stallMap[make_pair(clk,pc1)] = pc2;
 			stall++;
+		}
+			
 
 
 

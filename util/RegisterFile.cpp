@@ -64,10 +64,10 @@ void RegisterFile::getReg(long& reg1, long& reg2, int indx1, int indx2) {
 
 // Writing to register file also in rising edge...Writing to temp no problem?!
 void RegisterFile::setReg(int regIndx, long data){
-
+	if(regIndx==0)
+		return;
 	if(this->regWrite)
 		this->temp[regIndx] = data;	
-
 }
 
 
