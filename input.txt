@@ -1,6 +1,6 @@
-ld x5, 13(x3)
-ld x4, 13(x3)
-add x5,x5,x5
-lbl:
-add x4,x4,x4
-beq x5,x4,lbl
+loop:
+add x1, x1,x1
+beq x1,x2,loop
+add x1,x1,x1
+beq x1, x8,loop
+add x1,x1,x11

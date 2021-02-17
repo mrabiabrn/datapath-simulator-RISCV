@@ -59,7 +59,7 @@ int main() {
 	registers.setReg(5,11);
 	registers.update();
 	registers.setRegWrite(false);
-
+/*
 	dm.setMemRead(true);
 	cout<<"DM "<< 28<<":" << dm.read(28)<<endl;
 	cout<<"DM "<< 19<<":" << dm.read(19)<<endl;
@@ -69,7 +69,7 @@ int main() {
 		cout << "x" << i+1 << " " << registers.getReg(i+1) << endl;
 	
 	cout << endl;
-
+*/
 	int clk = 0;
 	int stall = 0;		// number of stalls
 	int nop = 0;
@@ -91,7 +91,7 @@ int main() {
 		*/
 
 		
-		cout<<"Instruction taken:" << inst[0]<<inst[1]<<inst[2]<<inst[3]<<endl;
+		//cout<<"Instruction taken:" << inst[0]<<inst[1]<<inst[2]<<inst[3]<<endl;
 	
 
 		if_id.setReg(0, instonum.find(inst[0])->second);	// 0 -> instruction code
@@ -134,7 +134,7 @@ int main() {
 
 		
 		if_id.setReg(4, PC.getReg(0));	// 4 -> PC
-		
+	/*	
 		cout<<"if-id is set to:"<<endl;
 		for(int i = 0; i < 6; i++)
 		 		cout<< if_id.temp[i]<<" ";
@@ -144,7 +144,7 @@ int main() {
 		for(int i = 0; i < 6; i++)
 		 		cout<< if_id.registers[i]<<" ";
 		cout<<endl;
-
+*/
 		/************************ ID STAGE ***********************/
 		/*
 		0 -> instruction add 0 sub 1 load 2 sd 3 beq 4
@@ -169,7 +169,7 @@ int main() {
 		id_ex.setReg(2, if_id.getReg(2));
 		id_ex.setReg(3, if_id.getReg(3));
 		id_ex.setReg(4, if_id.getReg(4));
-		cout<<registers.getReg(if_id.getReg(2))<<endl;
+		//cout<<registers.getReg(if_id.getReg(2))<<endl;
 		id_ex.setReg(5, registers.getReg(if_id.getReg(2))); // read reg1 value
 		id_ex.setReg(6, registers.getReg(if_id.getReg(3))); // read reg2 value
 		
@@ -188,14 +188,14 @@ int main() {
 			pc1=if_id.getReg(4);				// address of the dependent function
 			pc2=id_ex.getReg(4);				// address of the instruction that will forward the result
 			
-		 	cout<<"Stall1"<<endl;
+		 	//cout<<"Stall1"<<endl;
 		}
 		else {
 			PC.setReg(0,PC.getReg(0)+1);			// PC+1
 		}
 
 		// FORWARDING (MEM/WB -> IF/ID)... three cycle after ld or arithmetic
-		cout<<id_ex.getReg(3)<<id_ex.getReg(2)<<endl;
+		//cout<<id_ex.getReg(3)<<id_ex.getReg(2)<<endl;
 		if(mem_wb.getReg(7)  && mem_wb.getReg(1) != 0 && mem_wb.getReg(1) == if_id.getReg(2)){		// compare reg1
 			if(mem_wb.getReg(9)){
 				id_ex.setReg(5,mem_wb.getReg(5));
@@ -204,7 +204,7 @@ int main() {
 				id_ex.setReg(5,mem_wb.getReg(6));
 			}
 			
-			cout<<mem_wb.getReg(5)<<endl;
+			//cout<<mem_wb.getReg(5)<<endl;
 			
 		}
 		if(mem_wb.getReg(7)  && mem_wb.getReg(1) != 0 && mem_wb.getReg(1) == if_id.getReg(3)){		// compare reg2
@@ -263,7 +263,7 @@ int main() {
 					isStall=true;					// there is a stall
 					pc1=if_id.getReg(4);				// address of the dependent function
 					pc2=id_ex.getReg(4);				// address of the instruction that will forward its result
-					cout<<"Stall3"<<endl;
+					//cout<<"Stall3"<<endl;
 
 				}
 				
@@ -278,7 +278,7 @@ int main() {
 					isStall=true;					// there is a stall
 					pc1=if_id.getReg(4);				// address of the dependent function
 					pc2=ex_mem.getReg(4);				// address of the instruction that will forward its result
-					cout<<"Stall2"<<endl;
+					//cout<<"Stall2"<<endl;
 					
 				} else if(branchAlu.getZero()){			// branch is taken
 					
@@ -295,7 +295,7 @@ int main() {
 					pc1=if_id.getReg(4);				// address of the taken branch inst causing a stall
 					pc2=-1;					// -1 : stall after branch is taken
 					
-					cout<<"Stall4"<<endl;
+					//cout<<"Stall4"<<endl;
 					
 				}else{							// branch is not taken, PC++
 					
@@ -311,7 +311,7 @@ int main() {
 		control.fillReg(&id_ex, 7);
 		id_ex.setReg(14, if_id.getReg(5));	// 14 -> offset
 		
-		
+/*		
 		cout<<"id_ex is set to:"<<endl;
 		for(int i = 0; i < 15; i++)
 		 		cout<< id_ex.temp[i]<<" ";
@@ -320,14 +320,14 @@ int main() {
 		for(int i = 0; i < 15; i++)
 		 		cout<< id_ex.registers[i]<<" ";
 		cout<<endl;
-		
+*/		
 		/******************** EX STAGE *********************/
 		
 		// Select second input for alu
 		aluMux.setSelect(id_ex.getReg(8));	// aluSrc selects
 		aluMux.setInput_1(id_ex.getReg(6));	// value of the second register as first input
 		aluMux.setInput_2(id_ex.getReg(14));	// offset as second input
-		cout<<"ALU MUX op: "<<aluMux.getOutput()<<endl;
+		//cout<<"ALU MUX op: "<<aluMux.getOutput()<<endl;
 		
 		
 		alu.setOperation(id_ex.getReg(13));	// aluOp determines operation
@@ -366,7 +366,7 @@ int main() {
 			}
 		
 		alu.setInput_2(aluMux.getOutput());
-		cout << "alu input 1: " << alu.input_1 << " alu input 2: " << alu.input_2 << endl;
+		//cout << "alu input 1: " << alu.input_1 << " alu input 2: " << alu.input_2 << endl;
 		
 		//adder.setInput(id_ex.getReg(4), id_ex.getReg(14));		// calculates the address for branch TODO: NO NEED???
 
@@ -381,7 +381,7 @@ int main() {
 		
 		for(int i= 0; i < 7; i++)		
 			ex_mem.setReg(i+9, id_ex.getReg(i+7));	// pass control signals from ID/EX to EX/MEM
-		
+	/*	
 		cout<<"ex_mem is set to:"<<endl;
 		for(int i = 0; i < 16; i++)
 		 		cout<< ex_mem.temp[i]<<" ";
@@ -390,7 +390,7 @@ int main() {
 		for(int i = 0; i < 16; i++)
 		 		cout<< ex_mem.registers[i]<<" ";
 		cout<<endl;
-		
+	*/	
 		//int branch;
 		//branch = ex_mem.getReg(6) & ex_mem.getReg(14);	// zero AND pcSrc 
 		
@@ -398,8 +398,8 @@ int main() {
 		
 		dm.setMemRead(ex_mem.getReg(11));		// set read permission to Data Memory		
 		dm.setMemWrite(ex_mem.getReg(12));		// set write permisson to Data Memory
-		cout<<"Write: "<<ex_mem.getReg(12)<<endl;
-		cout<<"Read: "<<ex_mem.getReg(11)<<endl;
+		//cout<<"Write: "<<ex_mem.getReg(12)<<endl;
+		//cout<<"Read: "<<ex_mem.getReg(11)<<endl;
 		
 		dm.write(ex_mem.getReg(5), ex_mem.getReg(8));	// MEM[alu result] = reg2 if write permission 
 		
@@ -413,7 +413,7 @@ int main() {
 		mem_wb.setReg(7, ex_mem.getReg(9));		// regWrite
 		mem_wb.setReg(8, ex_mem.getReg(13));		// memToReg
 		mem_wb.setReg(9, ex_mem.getReg(11));		// memRead
-		
+	/*	
 		cout<<"mem_wb is set to:"<<endl;
 		for(int i = 0; i < 10; i++)
 		 		cout<< mem_wb.temp[i]<<" ";
@@ -422,15 +422,15 @@ int main() {
 		for(int i = 0; i < 10; i++)
 		 		cout<< mem_wb.registers[i]<<" ";
 		cout<<endl;
-		
+	*/	
 		/********************** WB STAGE **************************/
 		
 		writeMux.setSelect(mem_wb.getReg(8));	 	// memToReg signal selects
 		writeMux.setInput_1(mem_wb.getReg(6)); 	// alu result
 		writeMux.setInput_2(mem_wb.getReg(5)); 	// mem[alu result]
 		
-		cout<<mem_wb.getReg(6)<<mem_wb.getReg(5)<<endl;
-		cout<<"Write mux output "<<writeMux.input_1<<" "<<writeMux.input_2<<" "<<writeMux.getOutput()<<endl;
+		//cout<<mem_wb.getReg(6)<<mem_wb.getReg(5)<<endl;
+		//cout<<"Write mux output "<<writeMux.input_1<<" "<<writeMux.input_2<<" "<<writeMux.getOutput()<<endl;
 
 		registers.setRegWrite(mem_wb.getReg(7));			// set write permission to Register File
 		registers.setReg(mem_wb.getReg(1),writeMux.getOutput());	// regDest <- wirte mux result (alu result || mem[alu result])
@@ -443,14 +443,14 @@ int main() {
 		mem_wb.update();
 		registers.update();
 		PC.update();
-
+/*
 		for(int i= 0; i < 1; i++)
 		cout << "x" << i+1 << " " << registers.getReg(i+1) << endl;
 		
 		cout<<"PC: " << PC.getReg(0) << endl;
 		
 		cout<<endl;
-
+*/
 	}
 
 	/******* OUTPUT *******/

@@ -5,7 +5,8 @@
 using namespace std;
 
 /*
-add->0, sub->1, and->2, or ->3
+	add->0, sub->1, and->2, or ->3,	ld->4,	sd->5,	beq->6
+	Sets the control signals according to the given instruction
 */
 void ControlUnit::setOperation(int operation){
 	this->regWrite = 0;
@@ -49,7 +50,7 @@ void ControlUnit::setOperation(int operation){
 
 
 }	
-
+// Next 7 functions returns the control signal
 
 bool ControlUnit::getRegWrite() {
 
@@ -93,7 +94,7 @@ int ControlUnit::getAluOp() {
 	
 }
 
-
+// Given a register file and in index, fills the control values to the register file starting from the index(inclusive).
 void ControlUnit::fillReg(RegisterFile* regs, int idx){
 	regs->setReg(idx,this->regWrite);
 	regs->setReg(idx+1,this->aluSrc);
