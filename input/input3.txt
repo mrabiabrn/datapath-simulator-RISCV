@@ -1,0 +1,4 @@
+loop:
+add x1,x1,x1
+ld x1,26(x1)
+beq x1,x2,loop

@@ -1,0 +1,2 @@
+register value
+x2 2

@@ -75,7 +75,6 @@ void InstructionMemory::readInstruction(vector<string>& inst) {
 		// If PC is bigger than the instruction number, return a nop instruction
 		// Required to make sure the last instruction gets to the WB stage
 		if(this->PC->getReg(0)>=this->instructions.size()){
-			//cout<<this->PC->getReg(0)<<endl;
 			
 			inst.push_back( "nop");
 			inst.push_back("x0");
@@ -90,7 +89,6 @@ void InstructionMemory::readInstruction(vector<string>& inst) {
 		// Only valid instructions are returned as instructions.
 		if(inst.size() == 1){
 			this->PC->setReg(0,reg+1);
-			//cout<<this->PC->getReg(0)<<endl;
 			this->PC->update();
 			continue;
 		}

@@ -1,0 +1,5 @@
+ld	x3,26(x2)
+add	x4,x3,x3
+sub	x5,x3,x2
+add	x3,x4,x5
+sd 	x3,26(x2)		

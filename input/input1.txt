@@ -1,0 +1,8 @@
+loop:
+ld x1, 14(x2)
+add x1,x1,x3
+sd x1,16(x2)
+add x2,x2,x2
+add x2,x2,x2
+add x4,x4,x4
+beq x4,x5,loop

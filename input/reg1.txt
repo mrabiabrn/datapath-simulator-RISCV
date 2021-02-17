@@ -1,0 +1,6 @@
+register value
+x1 1
+x2 1
+x3 5
+x4 4
+x5 8
