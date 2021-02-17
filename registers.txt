@@ -1,4 +1,0 @@
-register	value
-x1		1
-x3		3
-x2		2	
