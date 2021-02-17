@@ -14,7 +14,7 @@
 
 using namespace std;
 
-int main() {
+int main(int argc, char *argv[]) {
 
 	// code of the instructions
 	map<string, int> instonum;
@@ -27,13 +27,15 @@ int main() {
 	instonum["beq"] = 6;
 	instonum["nop"] = 7;
 
-
+	string instInput = argv[1];
+	string memInput = argv[2];
+	string regInput = argv[3];
 
 	RegisterFile PC = RegisterFile(1, 1);
-	InstructionMemory im = InstructionMemory("input1.txt", &PC);
-	RegisterFile registers = RegisterFile(32, 0);
+	InstructionMemory im = InstructionMemory(instInput, &PC); //"input1.txt", &PC, 
+	RegisterFile registers = RegisterFile(32, 0, regInput, true);
 	Alu alu = Alu();
-	DataMemory dm = DataMemory("memory.txt");
+	DataMemory dm = DataMemory(memInput);
 	Mux aluMux = Mux();				// chooses the second input for alu
 	Mux pcMux = Mux();				// chooses next PC value when beq instruction comes 
 	Mux writeMux = Mux();				// chooses the value that will be written to register file at the end of the cycle
@@ -52,13 +54,24 @@ int main() {
 	
 	map<pair<int,long>,long> stallMap;
 	
+	/*
 	registers.setRegWrite(true);
 	registers.setReg(1,1);
 	registers.setReg(2,2);
-	registers.setReg(8,8);
-	registers.setReg(5,11);
+	registers.setReg(3,3);
+	registers.setReg(4,4);
+	registers.setReg(5,8);
 	registers.update();
-	registers.setRegWrite(false);
+	registers.setRegWrite(false);*/
+
+	
+	cout << "Initial Values of Registers" << endl;
+	for(int i = 0; i < 8; i++){
+		for(int j = 0; j < 4 ;j++)
+			cout << "x" << to_string(i*4+j) << " " << registers.getReg(i*4+j) << "\t";
+	}
+	cout << endl;
+	cout << endl;
 /*
 	dm.setMemRead(true);
 	cout<<"DM "<< 28<<":" << dm.read(28)<<endl;
@@ -74,8 +87,10 @@ int main() {
 	int stall = 0;		// number of stalls
 	int nop = 0;
 	
+	int print = -1;
+	
 	while(PC.getReg(0)<im.getInstructionNum()+5){	 // total num of clock cycles (without stalls) = num of instructions + 4... 
-		clk++;
+		
 		
 		/************************** IF STAGE ***********************************************/
 		vector<string> inst;
@@ -90,7 +105,7 @@ int main() {
 		* ALU inputs will be 2 & 3 
 		*/
 
-		
+		//if(print == clk)
 		//cout<<"Instruction taken:" << inst[0]<<inst[1]<<inst[2]<<inst[3]<<endl;
 	
 
@@ -98,9 +113,13 @@ int main() {
 		
 		if(inst[0] == "nop") 
 			nop++;
+		else 
+			nop=0;
 			
-		if(nop == 4)
+		if(nop == 5)
 			break;
+			
+		clk++;
 		
 		
 		if(inst[0] == "ld"){
@@ -134,7 +153,10 @@ int main() {
 
 		
 		if_id.setReg(4, PC.getReg(0));	// 4 -> PC
-	/*	
+		
+		//if(print == clk)
+		
+		/*
 		cout<<"if-id is set to:"<<endl;
 		for(int i = 0; i < 6; i++)
 		 		cout<< if_id.temp[i]<<" ";
@@ -144,7 +166,8 @@ int main() {
 		for(int i = 0; i < 6; i++)
 		 		cout<< if_id.registers[i]<<" ";
 		cout<<endl;
-*/
+		*/
+
 		/************************ ID STAGE ***********************/
 		/*
 		0 -> instruction add 0 sub 1 load 2 sd 3 beq 4

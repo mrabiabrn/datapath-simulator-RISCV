@@ -2,6 +2,7 @@
 #define REGISTERFILE_H
 
 #include <vector>
+#include <string>
 
 using namespace std;
 
@@ -14,9 +15,12 @@ class RegisterFile {
 	vector<long> temp;
 	// Control signal
 	bool regWrite;
+	bool isRegFile = false;
 	
 	public:
-	RegisterFile(int size, bool regWrite);			// regWrite = 1 when it is not the regfile
+	RegisterFile(int size, bool regWrite);				// regWrite = 1 when it is not the regfile
+	// constructor for actual register file
+	RegisterFile(int size, bool regWrite, string filePath, bool isRegFile);
 	// Write calculated values which has been stored in temp, to registers vector at the rising edge.
 	void update();							
 	// Sets the control signal regWrite which must be true to write a value.

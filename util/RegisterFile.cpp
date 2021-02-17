@@ -1,6 +1,12 @@
 #include "RegisterFile.h"
 #include <vector>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <string>
 
+
+using namespace std;
 /*
  * 	Default value for registers -> 0
  * 	regWrite = 0 means the constructed object is Register File
@@ -12,6 +18,45 @@ RegisterFile::RegisterFile(int size, bool regWrite) {
 	(this->temp).resize(size,0);
 	this->regWrite = regWrite;
 	
+}
+
+
+RegisterFile::RegisterFile(int size, bool regWrite, string filePath, bool isRegFile) {
+
+	
+	(this->registers).resize(size,0);
+	(this->temp).resize(size,0);
+	this->regWrite = regWrite;
+	this-> isRegFile = isRegFile;
+	
+	ifstream file(filePath);
+	string line;
+	int i = 0;
+	
+	getline(file, line);	// first line is header
+	
+	while(getline(file, line)) {
+	
+	if(line.size() > 0) {	// pass empty lines
+	
+		istringstream str(line);
+		string token;
+	
+		str >> token;
+		int regIndx = stoi(token.substr(1));	// read first token in the line (x1) -> 1
+		str >> token;
+		long data = stol(token);		// read second token in the line (data)
+		
+		(this->registers)[regIndx] = data;
+		(this->temp)[regIndx] = data;
+		 
+		
+	}
+	
+	}
+
+
+
 }
 
 /*
@@ -72,6 +117,10 @@ void RegisterFile::getReg(long& reg1, long& reg2, int indx1, int indx2) {
 * data: Data to be written
 */
 void RegisterFile::setReg(int regIndx, long data){
+	
+	if(this->isRegFile && regIndx == 0) 
+		return;
+	
 	if(this->regWrite)
 		this->temp[regIndx] = data;	
 }

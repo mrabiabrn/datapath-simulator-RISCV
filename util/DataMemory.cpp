@@ -25,7 +25,6 @@ DataMemory::DataMemory(string filePath) {
 	
 		istringstream str(line);
 		string token;
-		size_t position;
 	
 		str >> token;
 		int address = stoi(token);		// read first token in the line (address)

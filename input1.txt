@@ -1,7 +1,3 @@
-loop:
-add x1, x1,x1
-beq x1,x2,loop
-add x1,x1,x1
-beq x1, x8,loop
-add x1,x1,x1
-
+ld  x3,27(x1)
+add x3,x3,x2
+sd  x3,27(x1)
